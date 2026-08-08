@@ -205,10 +205,6 @@ npm test
 
 ---
 
-## 📸 Screenshots
-
-*(Place screenshots of Event Listing, Interactive 10x10 Seat Map, 5-minute Lock Timer, Demo Payment Gateway Modal, Digital Receipt, and Customer Booking History Dashboard here)*
-
 ---
 
 ## 📜 License

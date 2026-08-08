@@ -1,0 +1,104 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id          String        @id @default(uuid())
+  name        String
+  email       String        @unique
+  password    String
+  role        String        @default("USER")
+  createdAt   DateTime      @default(now())
+  events      Event[]       @relation("CreatedEvents")
+  bookings    Booking[]
+  lockedSeats Seat[]        @relation("LockedSeats")
+}
+
+model Venue {
+  id        String   @id @default(uuid())
+  name      String
+  address   String
+  city      String
+  capacity  Int
+  rows      Int      @default(10)
+  cols      Int      @default(10)
+  createdAt DateTime @default(now())
+  events    Event[]
+}
+
+model Event {
+  id               String        @id @default(uuid())
+  title            String
+  description      String
+  category         String        @default("CONCERT")
+  date             DateTime
+  price            Float
+  totalTickets     Int
+  availableTickets Int
+  imageUrl         String?
+  venueId          String
+  venue            Venue         @relation(fields: [venueId], references: [id])
+  createdById      String
+  createdBy        User          @relation("CreatedEvents", fields: [createdById], references: [id])
+  createdAt        DateTime      @default(now())
+  seats            Seat[]
+  bookings         Booking[]
+}
+
+model Seat {
+  id            String        @id @default(uuid())
+  eventId       String
+  event         Event         @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  row           String        // A to J
+  seatNumber    Int           // 1 to 10
+  type          String        // VIP, Premium, Regular
+  price         Float
+  status        String        @default("AVAILABLE") // AVAILABLE, LOCKED, BOOKED
+  lockExpiresAt DateTime?
+  bookedById    String?
+  bookedBy      User?         @relation("LockedSeats", fields: [bookedById], references: [id])
+  bookingSeats  BookingSeat[]
+  createdAt     DateTime      @default(now())
+
+  @@unique([eventId, row, seatNumber])
+}
+
+model Booking {
+  id            String        @id @default(uuid())
+  userId        String
+  user          User          @relation(fields: [userId], references: [id])
+  eventId       String
+  event         Event         @relation(fields: [eventId], references: [id])
+  bookingStatus String        @default("CONFIRMED") // CONFIRMED, CANCELLED
+  totalAmount   Float
+  bookingSeats  BookingSeat[]
+  payment       Payment?
+  createdAt     DateTime      @default(now())
+}
+
+model BookingSeat {
+  id        String   @id @default(uuid())
+  bookingId String
+  booking   Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  seatId    String
+  seat      Seat     @relation(fields: [seatId], references: [id], onDelete: Cascade)
+
+  @@unique([bookingId, seatId])
+}
+
+model Payment {
+  id            String   @id @default(uuid())
+  bookingId     String   @unique
+  booking       Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  amount        Float
+  currency      String   @default("USD")
+  status        String   @default("PENDING") // PENDING, SUCCESS, FAILED
+  transactionId String   @unique
+  paymentMethod String   @default("CARD")    // CARD, UPI, NET_BANKING
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}

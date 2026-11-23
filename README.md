@@ -1,4 +1,4 @@
-# Eventix — Production Real-Time Event Ticketing & Seat Reservation System
+# Eventix — Real-Time Event Ticketing & Seat Reservation System
 
 ![License](https://img.shields.io/badge/license-ISC-blue.svg)
 ![Node.js](https://img.shields.io/badge/Node.js-v20.x-green.svg)

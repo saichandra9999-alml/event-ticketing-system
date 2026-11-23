@@ -1,7 +1,6 @@
 const prisma = require('../config/db');
 const { redis, isRedisConnected } = require('../config/redis');
 const { sendSuccess, sendError } = require('../utils/responseHandler');
-const { cleanupExpiredLocks } = require('../services/seat.service');
 
 /**
  * Get all seats for an event, grouped by row (enriched with Redis active lock data)
@@ -19,9 +18,6 @@ const getSeatsByEvent = async (req, res, next) => {
     if (!event) {
       return sendError(res, 'Event not found', 404);
     }
-
-    // Auto cleanup DB expired locks fallback
-    await cleanupExpiredLocks();
 
     const seats = await prisma.seat.findMany({
       where: { eventId },
@@ -90,8 +86,6 @@ const getAvailableSeatsByEvent = async (req, res, next) => {
     if (!event) {
       return sendError(res, 'Event not found', 404);
     }
-
-    await cleanupExpiredLocks();
 
     let seats = await prisma.seat.findMany({
       where: {
